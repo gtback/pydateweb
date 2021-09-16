@@ -9,6 +9,7 @@
 <body>
 
   <h1>Python Date Formatting</h1>
+  <h2 id="loading">Be patient, loading Pyodide!</h2>
   <div>
     <input id="format" type="text" value="The date is: %Y-%m-%d" size="50" />
     <button onclick="formatDate()">Format</button>
@@ -36,7 +37,7 @@
       <li class="example">%Y-%m-%d %H:%M:%S.%f %z</li>
     </ul>
   </div>
-  
+
   <hr />
 
   <!-- Table adapted from https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes -->
@@ -205,8 +206,9 @@
   </table>
 
   <script type="text/javascript">
-          const formatInput = document.getElementById("format");
+    const formatInput = document.getElementById("format");
     const output = document.getElementById("output");
+    const loading = document.getElementById("loading");
 
     let loadScript = `
     import datetime
@@ -222,7 +224,9 @@
         indexURL: "https://cdn.jsdelivr.net/pyodide/v0.18.0/full/"
       });
 
-      pyodide.runPython(loadScript)
+      pyodide.runPython(loadScript);
+      // Hide Loading message once Pyodide is loaded.
+      loading.style.display = "none";
       return pyodide;
     }
 
