@@ -21,6 +21,24 @@
 
   <hr />
 
+  <div>
+    <p><strong>Examples:</strong></p>
+    <ul>
+      <!-- Many example formats from https://www.strfti.me/ -->
+      <li class="example">%Y-%m-%d</li>
+      <li class="example">%B %e, %Y</li>
+      <li class="example">%a, %b %e</li>
+      <li class="example">%e %b %Y</li>
+      <li class="example">%A, %B %e, %Y</li>
+      <li class="example">%H:%M:%S</li>
+      <li class="example">%I:%M %p</li>
+      <li class="example">%A, %B %e, %Y at %I:%M %p</li>
+      <li class="example">%Y-%m-%d %H:%M:%S.%f %z</li>
+    </ul>
+  </div>
+  
+  <hr />
+
   <!-- Table adapted from https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes -->
   <table id="formatCodes">
     <thead>
@@ -187,11 +205,8 @@
   </table>
 
   <script type="text/javascript">
-    const format = document.getElementById("format");
+          const formatInput = document.getElementById("format");
     const output = document.getElementById("output");
-
-    // %A, %B %e, %Y at %I:%M %p
-    // "%Y-%m-%d %H:%M:%S.%f %z"
 
     let loadScript = `
     import datetime
@@ -214,37 +229,45 @@
     let pyodideReadyPromise = main();
 
     async function clearFormat() {
-      format.value = "";
+      formatInput.value = "";
     }
 
     async function setValues() {
       let pyodide = await pyodideReadyPromise;
       document.querySelectorAll("td.directive").forEach(function (directiveElement) {
         let directive = directiveElement.firstChild.innerHTML;
-        console.log(directive);
         directiveElement.onclick = function (event) {
           // Replace the selected text in the format box with the clicked code
-          let start = format.selectionStart;
-          let end = format.selectionEnd;
-          let text = format.value.slice(0, start) + directive + format.value.slice(end);
-          format.value = text
+          let start = formatInput.selectionStart;
+          let end = formatInput.selectionEnd;
+          let text = formatInput.value.slice(0, start) + directive + formatInput.value.slice(end);
+          formatInput.value = text
 
-          format.focus();
+          formatInput.focus();
           // Put the cursor at the end of the newly added directive
           let newPos = start + directive.length;
-          format.selectionStart = newPos;
-          format.selectionEnd = newPos;
+          formatInput.selectionStart = newPos;
+          formatInput.selectionEnd = newPos;
         }
         directiveElement.nextElementSibling.innerHTML = pyodide.runPython(`format_date("${directive}")`);
       });
+      document.querySelectorAll("li.example").forEach(function (exampleElement) {
+        let format = exampleElement.innerHTML;
+        // Put this format into the input box.
+        exampleElement.onclick = function (event) {
+          formatInput.value = format;
+        }
+
+        // Replace each example with the contents of rendering the current date in this format.
+        exampleElement.innerHTML = pyodide.runPython(`format_date("${format}")`);
+      })
     }
 
 
     async function formatDate() {
       let pyodide = await pyodideReadyPromise;
       try {
-        output.innerHTML = pyodide.runPython(`format_date("${format.value}")`)
-        output.focus();
+        output.innerHTML = pyodide.runPython(`format_date("${formatInput.value}")`)
       } catch (err) {
         console.log(err);
       }
